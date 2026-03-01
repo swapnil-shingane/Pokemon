@@ -10,16 +10,16 @@ while True:
     if response in ["Y", "y"]:
         ReDownloadOnlyCorruptedFiles = False
         break
-    if response in ["n", "n"]:
+    if response in ["N", "n"]:
         ReDownloadOnlyCorruptedFiles = True
         # Re-download only corrupted files (sometimes <1kb corrupted files are downloaded from Bulbapedia)
         print("Only new/ corrupted files will be downloaded")
         break
 
 
-def Download(FileName):
+def Download(FileName, response, url):
     with open(FileName, "wb") as file:
-        for chunk in r.iter_content(chunk_size=1024):
+        for chunk in response.iter_content(chunk_size=1024):
             if chunk:
                 file.write(chunk)
         print("Downloaded: " + url)
@@ -34,18 +34,19 @@ f.close()
 
 # Downloading
 for url in URLs:
+    file_id = None
     try:
-        id = re.search(r"/\d\d\d\d", url).group(0)
-        id = id[1:]
-        fileToDownload = downloadDir + id + ".png"
+        file_id = re.search(r"/\d\d\d\d", url).group(0)
+        file_id = file_id[1:]
+        fileToDownload = downloadDir + file_id + ".png"
         r = requests.get(url, stream=True)
         if not ReDownloadOnlyCorruptedFiles:
-            Download(fileToDownload)  # (Re-)Download all files unconditionally
+            Download(fileToDownload, r, url)  # (Re-)Download all files unconditionally
         elif os.path.exists(fileToDownload):
             file_stat = os.stat(fileToDownload)
             if file_stat.st_size < 1000:
-                Download(fileToDownload)  # Re-download only corrupted files
+                Download(fileToDownload, r, url)  # Re-download only corrupted files
         else:
-            Download(fileToDownload)  # Download new file
+            Download(fileToDownload, r, url)  # Download new file
     except AttributeError:
-        print("An Error Occured for: " + id)
+        print("An Error Occurred for: " + (file_id if file_id is not None else url))
