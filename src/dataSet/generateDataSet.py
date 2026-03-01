@@ -220,8 +220,8 @@ def gEvolutionChain():
         data={'evolution-chains':results}
         content=json.dumps(data)
         #Remove Unused URL Data
-        content_min = re.sub('{"name": ("[A-Za-z-]+"), "url": "https:\/\/pokeapi.co\/api\/v2\/evolution-trigger\/\d+\/"}', r"\1", content)
-        content_min2 = re.sub('url": "https:\/\/pokeapi.co\/api\/v2\/pokemon-species\/(\d+)\/"', r'id": \1', content_min)
+        content_min = re.sub(r'{"name": ("[A-Za-z-]+"), "url": "https://pokeapi\.co/api/v2/evolution-trigger/\d+/"}', r"\1", content)
+        content_min2 = re.sub(r'url": "https://pokeapi\.co/api/v2/pokemon-species/(\d+)/"', r'id": \1', content_min)
         f.write(content_min2)
         print('Data wrote to '+fileName)
     

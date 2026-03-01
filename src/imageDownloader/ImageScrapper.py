@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 # Scrapes Image URLs from Bulbapedia
 
 # Retrieve All Pokemon Names
-url = "https://pokeapi.co/api/v2/pokemon/?limit=1025?"
+url = "https://pokeapi.co/api/v2/pokemon/?limit=1025"
 r = requests.get(url)
 data = r.json()
 # Storing Names
@@ -60,50 +60,54 @@ exceptionalPokemonNames = {
     1004: "Chi-Yu",
 }
 # Generating URLs
-id = 1
+pokemon_id = 1
 for i in pokemonNames:
-    if id in exceptionalPokemonNames:
-        name = exceptionalPokemonNames[id]
+    if pokemon_id in exceptionalPokemonNames:
+        name = exceptionalPokemonNames[pokemon_id]
     else:
         name = i.title().replace("-", "_")
     url = (
         "https://bulbapedia.bulbagarden.net/wiki/File:"
-        + str(id).zfill(4)
+        + str(pokemon_id).zfill(4)
         + name
         + ".png"
     )
     pokemonImagePageUrls.append(url)
     print(name + " " + url)
-    id = id + 1
+    pokemon_id = pokemon_id + 1
 
 # Making requests to scrape the pages for direct links to the artwork
-expectional = []
-id = 0
+exceptional = []
+index = 0
 directUrls = []
 for url in pokemonImagePageUrls:
     page = requests.get(url)
     if page.status_code == 200:
         soup = BeautifulSoup(page.content, "html.parser")
-        res = soup.find(class_="fullMedia").find(class_="internal")
-        directUrls.append(res["href"])
+        fullMedia = soup.find(class_="fullMedia")
+        internal = fullMedia.find(class_="internal") if fullMedia else None
+        if internal:
+            directUrls.append(internal["href"])
+        else:
+            exceptional.append(pokemonNames[index])
     else:
-        expectional.append(pokemonNames[id])
-    id = id + 1
+        exceptional.append(pokemonNames[index])
+    index = index + 1
     print(
-        f"Scrapping for direct links: {id}/({len(pokemonImagePageUrls)})",
+        f"Scraping for direct links: {index}/({len(pokemonImagePageUrls)})",
         end="\r",
     )
 
 print("\nDirect URLs:")
 print(*directUrls, sep="\n")
-if len(expectional) > 0:
+if len(exceptional) > 0:
     print("Failed to fetch:")
-    print(*expectional, sep="\n")
+    print(*exceptional, sep="\n")
 
 # Storing the data in text files
 with open("URLs/URLs.txt", "w") as f:
     for url in directUrls:
         f.write("%s\n" % url)
 with open("ImageScrapperFailedList.txt", "w") as f:
-    for name in expectional:
+    for name in exceptional:
         f.write("%s\n" % name)
