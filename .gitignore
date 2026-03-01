@@ -1,2 +1,4 @@
 *.log
 /src/imageDownloader/downloads/*
+__pycache__/
+*.pyc
